@@ -1,7 +1,11 @@
 # 🎬 CineMatch - Smart Movie & Series Recommendation Engine
 
 <p align="center">
-  <img src="https://images.unsplash.com/photo-1574267432553-4b4628081c31?w=1280&auto=format&fit=crop&q=80" alt="CineMatch Banner" width="100%" style="border-radius: 12px;" />
+  <img
+    src="https://bigpicturefilmclub.com/wp-content/uploads/2022/07/dejmvxs-3fde7fef-57e2-4a34-999d-6de6fc69a81c.jpg"
+    alt="CineMatch Banner"
+    width="100%"
+  />
 </p>
 
 <p align="center">
