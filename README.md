@@ -9,26 +9,25 @@
 </p>
 
 <p align="center">
-  <a href="https://cinematch-7d1t.onrender.com/">
-    <img src="https://img.shields.io/badge/🌐_Live_Demo-cinematch--7d1t.onrender.com-46E399?style=for-the-badge&logo=render" alt="Live Demo" />
-  </a>
+  <a href="https://cinematch-7d1t.onrender.com/" target="_blank"><img src="https://img.shields.io/badge/Live_Demo-Render-46E399?style=for-the-badge&logo=render" alt="Live Demo" /></a>
   <img src="https://img.shields.io/badge/Next.js-16.3-black?style=for-the-badge&logo=next.js" alt="Next.js" />
   <img src="https://img.shields.io/badge/React-19.0-61DAFB?style=for-the-badge&logo=react" alt="React" />
   <img src="https://img.shields.io/badge/TMDB-API-01b4e4?style=for-the-badge&logo=themoviedb" alt="TMDB API" />
-  <img src="https://img.shields.io/badge/Author-Sugata%20Mondal-red?style=for-the-badge" alt="Sugata Mondal" />
+  <img src="https://img.shields.io/badge/Author-Sugata_Mondal-e50914?style=for-the-badge" alt="Sugata Mondal" />
 </p>
 
 <p align="center">
-  🚀 <strong><a href="https://cinematch-7d1t.onrender.com/">Click Here to Visit Live Application</a></strong>
+  🌐 <strong><a href="https://cinematch-7d1t.onrender.com/" target="_blank">https://cinematch-7d1t.onrender.com</a></strong>
 </p>
 
 ---
 
 ## 🎓 About The Project
 
-**CineMatch** was originally developed by me **Sugata Mondal** as part of my **MSc. Computer Science Final Semester Project (2019)**.
+**CineMatch** was originally developed by me **Sugata Mondal** as part of my **MSc. Computer Science Final Semester Project (2019)**. 
+I have tried to make it better in 2026 with New features added, and AI Integration.
 
-The project addresses the common challenge of *"movie fatigue"* — helping cinephiles and casual viewers quickly discover trending movies, explore web series, look up streaming availability, and generate instant personalized recommendations based on their rating preferences and watch lists.
+The project addresses the common challenge of *"movie fatigue"* helping cinephiles and casual viewers quickly discover trending movies, explore web series, look up streaming availability, and generate instant personalized recommendations based on their rating preferences and watch lists.
 
 ---
 
@@ -38,7 +37,7 @@ The project addresses the common challenge of *"movie fatigue"* — helping cine
 - 🇮🇳 **Indian Movies & Web Series Multi-Search**: Real-time search support for both **Movies** (*RRR*, *Kalki 2898 AD*, *Jawan*, *Dangal*, *3 Idiots*) and **Web Series** (*Panchayat*, *Mirzapur*, *Sacred Games*, *The Family Man*, *Scam 1992*).
 - 🧠 **Smart Recommendation Engine ("For You")**: Computes personalized **Match Percentage** scores (e.g. `96% Match`) by blending TMDB recommendation endpoints with a custom genre distribution & keyword overlap weighting matrix.
 - 📺 **Where to Watch (JustWatch)**: Shows live streaming platforms for **Stream**, **Rent**, and **Buy** (Netflix, Prime Video, Disney+ Hotstar, JioCinema, ZEE5, Apple TV) with **India (IN)** set as default region.
-- ⭐ **"My List" & Star Ratings**: Save favorites and give 1-10 star ratings without friction. Persisted locally in the browser (`localStorage`) — no registration or database needed.
+- ⭐ **"My List" & Star Ratings**: Save favorites and give 1-10 star ratings without friction. Persisted locally in the browser (`localStorage`) - no registration or database needed.
 - 🎬 **Cinematic Dark Theme**: Inspired by Plex and IMDb (`#0b0e14` surface, `#f5c518` IMDb gold, `#e50914` streaming accent) with trailer video overlays and smooth hover previews.
 - 📱 **Mobile Optimized**: Fully responsive layout featuring a fixed bottom navigation bar (`MobileNav.js`) and overflow-free card modals.
 
