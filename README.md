@@ -9,7 +9,6 @@
 </p>
 
 <p align="center">
-  <a href="https://cinematch-7d1t.onrender.com/" target="_blank"><img src="https://img.shields.io/badge/Live_Demo-Render-46E399?style=for-the-badge&logo=render" alt="Live Demo" /></a>
   <img src="https://img.shields.io/badge/Next.js-16.3-black?style=for-the-badge&logo=next.js" alt="Next.js" />
   <img src="https://img.shields.io/badge/React-19.0-61DAFB?style=for-the-badge&logo=react" alt="React" />
   <img src="https://img.shields.io/badge/TMDB-API-01b4e4?style=for-the-badge&logo=themoviedb" alt="TMDB API" />
@@ -17,7 +16,7 @@
 </p>
 
 <p align="center">
-  🌐 <strong><a href="https://cinematch-7d1t.onrender.com/" target="_blank">https://cinematch-7d1t.onrender.com</a></strong>
+  <a href="https://cinematch-7d1t.onrender.com/" target="_blank"><img src="https://img.shields.io/badge/Live_Demo-Render-46E399?style=for-the-badge&logo=render" alt="Live Demo" /></a>
 </p>
 
 ---
@@ -25,9 +24,9 @@
 ## 🎓 About The Project
 
 **CineMatch** was originally developed by me **Sugata Mondal** as part of my **MSc. Computer Science Final Semester Project (2019)**. 
-I have tried to make it better in 2026 with New features added, and AI Integration.
+I have tried to make it better in 2026 with New features added and AI Integration.
 
-The project addresses the common challenge of *"movie fatigue"* helping cinephiles and casual viewers quickly discover trending movies, explore web series, look up streaming availability, and generate instant personalized recommendations based on their rating preferences and watch lists.
+The project addresses the common challenge of *"movie fatigue"* by helping cinephiles and casual viewers quickly discover trending movies, explore web series, look up streaming availability, and generate instant personalized recommendations based on their rating preferences and watch lists.
 
 ---
 
