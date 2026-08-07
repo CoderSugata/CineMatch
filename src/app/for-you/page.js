@@ -14,7 +14,7 @@ export default function ForYouPage() {
   const [ratedCount, setRatedCount] = useState(0);
   const [selectedMovie, setSelectedMovie] = useState(null);
 
-  const fetchRecommendations = () => {
+  const fetchRecommendations = (isRefresh = false) => {
     setLoading(true);
     const favorites = getFavorites();
     const ratings = getRatings();
@@ -25,7 +25,7 @@ export default function ForYouPage() {
     fetch('/api/recommendations', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ favorites, ratings })
+      body: JSON.stringify({ favorites, ratings, refresh: isRefresh })
     })
       .then(res => res.json())
       .then(data => {
@@ -38,8 +38,8 @@ export default function ForYouPage() {
   };
 
   useEffect(() => {
-    fetchRecommendations();
-    const handleStorage = () => fetchRecommendations();
+    fetchRecommendations(false);
+    const handleStorage = () => fetchRecommendations(false);
     window.addEventListener('cinematch_storage_change', handleStorage);
     return () => window.removeEventListener('cinematch_storage_change', handleStorage);
   }, []);
@@ -75,7 +75,7 @@ export default function ForYouPage() {
         <button
           type="button"
           className="btn-secondary"
-          onClick={fetchRecommendations}
+          onClick={() => fetchRecommendations(true)}
           disabled={loading}
         >
           <RefreshCw size={16} className={loading ? 'animate-spin' : ''} /> Refresh Matches

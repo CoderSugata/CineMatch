@@ -6,8 +6,9 @@ export async function POST(request) {
     const body = await request.json();
     const favorites = body.favorites || [];
     const ratings = body.ratings || {};
+    const refresh = body.refresh || false;
 
-    const recommendations = await generateRecommendations(favorites, ratings);
+    const recommendations = await generateRecommendations(favorites, ratings, { refresh });
     return NextResponse.json({ success: true, results: recommendations });
   } catch (error) {
     console.error('Recommendations API error:', error);
