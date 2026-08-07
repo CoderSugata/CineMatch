@@ -18,7 +18,7 @@ export async function generateRecommendations(favorites = [], ratings = {}, opti
     const popular = await getPopularMovies();
     let items = popular.slice(0, 20);
     if (isRefresh) {
-      items = items.sort(() => 0.5 - Math.random());
+      items = items.sort(() => Math.random() - 0.5);
     }
     return items.slice(0, 12).map(m => ({
       ...m,
@@ -57,12 +57,12 @@ export async function generateRecommendations(favorites = [], ratings = {}, opti
 
   // If refresh is requested, shuffle seeds to explore different recommendation anchors!
   if (isRefresh && seedMovies.length > 1) {
-    seedMovies = [...seedMovies].sort(() => 0.5 - Math.random());
+    seedMovies = [...seedMovies].sort(() => Math.random() - 0.5);
   }
 
   const candidateMap = new Map();
 
-  // 2. Query TMDB similar endpoint for seed movies (pick top seeds)
+  // 2. Query TMDB similar endpoint for seed movies
   const topSeeds = seedMovies.slice(0, 6);
   for (const seed of topSeeds) {
     const similar = await getMovieSimilar(seed.id);
@@ -84,7 +84,7 @@ export async function generateRecommendations(favorites = [], ratings = {}, opti
     });
   }
 
-  // Supplement candidate pool with trending/popular titles to ensure plenty of candidates
+  // Supplement candidate pool with trending/popular titles
   const trending = await getTrendingMovies();
   (trending || []).forEach(m => {
     const mIdStr = String(m.id);
@@ -117,9 +117,9 @@ export async function generateRecommendations(favorites = [], ratings = {}, opti
     // Multi-seed overlap bonus (+12 per seed match)
     score += (entry.occurrenceCount - 1) * 12;
 
-    // Optional small random variance on refresh (+-3) for fresh ordering
+    // Optional random variance on refresh for dynamic ordering
     if (isRefresh) {
-      score += (Math.random() * 6 - 3);
+      score += (Math.random() * 10 - 5);
     }
 
     // Convert raw score to realistic match percentage (72% to 99%)
@@ -146,11 +146,11 @@ export async function generateRecommendations(favorites = [], ratings = {}, opti
   // Sort descending by match percentage & vote average
   scoredCandidates.sort((a, b) => b.matchScore - a.matchScore || b.vote_average - a.vote_average);
 
-  // If refresh is requested, return a varied sample from top 30 candidate matches
-  if (isRefresh && scoredCandidates.length > 15) {
-    const topTier = scoredCandidates.slice(0, 8); // Always keep top 8 absolute best
-    const secondTier = scoredCandidates.slice(8, 35).sort(() => 0.5 - Math.random()); // Shuffle remaining high matches
-    return [...topTier, ...secondTier].slice(0, 20);
+  // If refresh is requested, shuffle the candidate pool so EVERY click yields a fresh new set of recommendations!
+  if (isRefresh && scoredCandidates.length > 5) {
+    const candidatePool = scoredCandidates.slice(0, 40);
+    const shuffled = candidatePool.sort(() => Math.random() - 0.5);
+    return shuffled.slice(0, 20);
   }
 
   return scoredCandidates.slice(0, 20);

@@ -22,9 +22,10 @@ export default function ForYouPage() {
     setFavCount(favorites.length);
     setRatedCount(Object.keys(ratings).length);
 
-    fetch('/api/recommendations', {
+    fetch(`/api/recommendations?t=${Date.now()}`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' },
+      cache: 'no-store',
       body: JSON.stringify({ favorites, ratings, refresh: isRefresh })
     })
       .then(res => res.json())
