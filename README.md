@@ -9,11 +9,17 @@
 </p>
 
 <p align="center">
+  <a href="https://cinematch-7d1t.onrender.com/">
+    <img src="https://img.shields.io/badge/🌐_Live_Demo-cinematch--7d1t.onrender.com-46E399?style=for-the-badge&logo=render" alt="Live Demo" />
+  </a>
   <img src="https://img.shields.io/badge/Next.js-16.3-black?style=for-the-badge&logo=next.js" alt="Next.js" />
   <img src="https://img.shields.io/badge/React-19.0-61DAFB?style=for-the-badge&logo=react" alt="React" />
   <img src="https://img.shields.io/badge/TMDB-API-01b4e4?style=for-the-badge&logo=themoviedb" alt="TMDB API" />
-  <img src="https://img.shields.io/badge/JustWatch-Streaming-yellow?style=for-the-badge" alt="JustWatch" />
   <img src="https://img.shields.io/badge/Author-Sugata%20Mondal-red?style=for-the-badge" alt="Sugata Mondal" />
+</p>
+
+<p align="center">
+  🚀 <strong><a href="https://cinematch-7d1t.onrender.com/">Click Here to Visit Live Application</a></strong>
 </p>
 
 ---
