@@ -1,4 +1,4 @@
-# 🎬 CineMatch — Smart Movie & Series Recommendation Engine
+# 🎬 CineMatch - Smart Movie & Series Recommendation Engine
 
 <p align="center">
   <img src="https://images.unsplash.com/photo-1574267432553-4b4628081c31?w=1280&auto=format&fit=crop&q=80" alt="CineMatch Banner" width="100%" style="border-radius: 12px;" />
@@ -26,7 +26,7 @@
 
 ## 🎓 About The Project
 
-**CineMatch** was originally developed by **Sugata Mondal** as part of his **MSc. Computer Science Final Semester Project (2019)**.
+**CineMatch** was originally developed by me **Sugata Mondal** as part of my **MSc. Computer Science Final Semester Project (2019)**.
 
 The project addresses the common challenge of *"movie fatigue"* — helping cinephiles and casual viewers quickly discover trending movies, explore web series, look up streaming availability, and generate instant personalized recommendations based on their rating preferences and watch lists.
 
