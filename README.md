@@ -2,7 +2,7 @@
 
 <p align="center">
   <img
-    src="https://bigpicturefilmclub.com/wp-content/uploads/2022/07/dejmvxs-3fde7fef-57e2-4a34-999d-6de6fc69a81c.jpg"
+    src="https://d2eib6r9tuf5y8.cloudfront.net/l/assets/img/article/article-1708-joswvwm6/keyvisual.jpg"
     alt="CineMatch Banner"
     width="100%"
   />
