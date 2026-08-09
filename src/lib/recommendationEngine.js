@@ -65,7 +65,8 @@ export async function generateRecommendations(favorites = [], ratings = {}, opti
   // 2. Query TMDB similar endpoint for seed movies
   const topSeeds = seedMovies.slice(0, 6);
   for (const seed of topSeeds) {
-    const similar = await getMovieSimilar(seed.id);
+    const sType = seed.media_type || (seed.name && !seed.title ? 'tv' : 'movie');
+    const similar = await getMovieSimilar(seed.id, sType);
     (similar || []).forEach(candidate => {
       const cIdStr = String(candidate.id);
       if (interactedMovieIds.has(cIdStr)) return; // Skip already favorited/rated

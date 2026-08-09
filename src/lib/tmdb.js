@@ -54,11 +54,18 @@ export const TMDB_GENRES = [
  */
 export function normalizeMediaItem(item) {
   if (!item) return null;
+  const isTV = !!(
+    item.media_type === 'tv' ||
+    (item.name && !item.title) ||
+    item.first_air_date ||
+    item.number_of_seasons
+  );
+
   return {
     ...item,
     title: item.title || item.name || 'Untitled',
     release_date: item.release_date || item.first_air_date || '',
-    media_type: item.media_type || (item.name ? 'tv' : 'movie')
+    media_type: isTV ? 'tv' : (item.media_type || 'movie')
   };
 }
 
@@ -73,7 +80,7 @@ export const MOCK_MOVIES = [
     media_type: 'movie',
     tagline: 'Rise. Roar. Revolt.',
     overview: 'A tale of two legendary revolutionaries and their journey far away from home before they started fighting for their country in the 1920s.',
-    poster_path: '/nEufeZlyAOLqO2brrs0yeF1LGXO.jpg',
+    poster_path: '/wEufeZlyAOLqO2brrs0yeF1LGXO.jpg',
     backdrop_path: '/m4TUaFmvoEvAU3Kx825YSpVUvUd.jpg',
     vote_average: 7.8,
     vote_count: 1420,
@@ -412,7 +419,9 @@ async function fetchTMDB(endpoint, params = {}) {
       });
 
       if (!res.ok) {
-        console.warn(`TMDB API request failed (${res.status}): ${url}`);
+        if (res.status !== 404) {
+          console.warn(`TMDB API warning (${res.status}): ${url}`);
+        }
         return null;
       }
 
@@ -503,40 +512,253 @@ export async function searchMovies({ query, genre, year, minRating, sortBy, page
   return results;
 }
 
-export async function getMovieDetails(movieId, type = 'movie') {
+/**
+ * Smart Hybrid Similarity & Recommendation Engine (5-Pillar Universal Model)
+ * Combines TMDB /recommendations, /similar, and targeted /discover search.
+ * Re-ranks candidates by Country/Language context, Studio/Network DNA, Topic keywords, Genre overlap, and Quality/Era floors.
+ */
+export async function getSmartRecommendations(movieId, type = 'movie', rawData = null) {
   const isTV = type === 'tv';
-  const primaryEndpoint = isTV ? `/tv/${movieId}` : `/movie/${movieId}`;
-  const fallbackEndpoint = isTV ? `/movie/${movieId}` : `/tv/${movieId}`;
+  const targetIdStr = String(movieId);
 
-  let data = await fetchTMDB(primaryEndpoint, { append_to_response: 'credits,similar,recommendations,watch/providers,videos' });
+  const targetLanguage = rawData?.original_language || 'en';
+  const targetOriginCountry = rawData?.origin_country?.[0] || rawData?.production_countries?.[0]?.iso_3166_1 || (targetLanguage === 'hi' ? 'IN' : 'US');
+  const targetGenres = (rawData?.genres || []).map(g => (typeof g === 'object' ? g.id : g)) || [];
+  const targetYearStr = (rawData?.release_date || rawData?.first_air_date || '').slice(0, 4);
+  const targetYear = parseInt(targetYearStr, 10) || 2024;
 
-  // If primary endpoint failed, try fallback endpoint
-  if (!data) {
-    data = await fetchTMDB(fallbackEndpoint, { append_to_response: 'credits,similar,recommendations,watch/providers,videos' });
+  const targetCompanies = (rawData?.production_companies || []).map(c => String(c.id || c.name).toLowerCase());
+  const targetNetworks = (rawData?.networks || []).map(n => String(n.id || n.name).toLowerCase());
+
+  const rawKeywords = rawData?.keywords?.results || rawData?.keywords?.keywords || rawData?.keywords || [];
+  const targetKeywords = (Array.isArray(rawKeywords) ? rawKeywords : []).map(k => String(k.name || k.id || k).toLowerCase());
+
+  const candidateMap = new Map();
+
+  const addCandidates = (items, defaultMediaType = type, sourceWeight = 0) => {
+    if (!items || !Array.isArray(items)) return;
+    items.forEach(rawItem => {
+      const cIdStr = String(rawItem.id);
+      if (cIdStr === targetIdStr) return; // Exclude self
+
+      const normalized = normalizeMediaItem({
+        ...rawItem,
+        media_type: rawItem.media_type || (rawItem.name && !rawItem.title ? 'tv' : defaultMediaType)
+      });
+
+      if (!candidateMap.has(cIdStr)) {
+        candidateMap.set(cIdStr, { item: normalized, sourceWeight });
+      } else {
+        const existing = candidateMap.get(cIdStr);
+        existing.sourceWeight = Math.max(existing.sourceWeight, sourceWeight);
+      }
+    });
+  };
+
+  // 1. Pull candidates from rawData recommendations & similar if present
+  if (rawData?.recommendations?.results) {
+    addCandidates(rawData.recommendations.results, type, 80); // Direct recommendation boost (+80 pts)
+  }
+  if (rawData?.similar?.results) {
+    addCandidates(rawData.similar.results, type, 40);
   }
 
-  if (data) {
-    return normalizeMediaItem({
-      ...data,
-      media_type: data.name && !data.title ? 'tv' : (data.title ? 'movie' : type)
+  // 2. Explicitly query TMDB endpoints if candidate pool is sparse
+  if (candidateMap.size < 12) {
+    const recEndpoint = isTV ? `/tv/${movieId}/recommendations` : `/movie/${movieId}/recommendations`;
+    const simEndpoint = isTV ? `/tv/${movieId}/similar` : `/movie/${movieId}/similar`;
+
+    const [recData, simData] = await Promise.all([
+      fetchTMDB(recEndpoint),
+      fetchTMDB(simEndpoint)
+    ]);
+
+    if (recData?.results) addCandidates(recData.results, type, 80);
+    if (simData?.results) addCandidates(simData.results, type, 40);
+  }
+
+  // 3. Targeted Discover Query ONLY if candidate pool is still sparse (< 6 items)
+  if (candidateMap.size < 6) {
+    const discoverEndpoint = isTV ? '/discover/tv' : '/discover/movie';
+    const discoverParams = {
+      sort_by: 'popularity.desc',
+      'vote_count.gte': 5,
+      page: 1
+    };
+
+    if (targetOriginCountry) discoverParams.with_origin_country = targetOriginCountry;
+    if (targetLanguage) discoverParams.with_original_language = targetLanguage;
+    if (targetGenres.length > 0) discoverParams.with_genres = targetGenres.slice(0, 2).join(',');
+
+    const discoverData = await fetchTMDB(discoverEndpoint, discoverParams);
+    if (discoverData?.results) addCandidates(discoverData.results, type, 0);
+  }
+
+  // 4. 5-Pillar Universal Scoring Matrix
+  const scoredCandidates = [];
+
+  for (const entry of candidateMap.values()) {
+    const candidate = entry.item;
+    if (!candidate.poster_path) continue; // Must have poster image
+
+    let score = entry.sourceWeight || 0; // Starts with direct recommendation weight (+80 pts for TMDB recommendations!)
+
+    const cLang = candidate.original_language || '';
+    const cCountry = candidate.origin_country?.[0] || candidate.production_countries?.[0]?.iso_3166_1 || '';
+    const cGenres = candidate.genre_ids || (candidate.genres || []).map(g => (typeof g === 'object' ? g.id : g)) || [];
+    const cYearStr = (candidate.release_date || '').slice(0, 4);
+    const cYear = parseInt(cYearStr, 10) || 2024;
+    const voteAvg = candidate.vote_average || 0;
+    const voteCount = candidate.vote_count || 0;
+
+    // --- PILLAR 1: Origin Country & Language Context ---
+    if (cCountry && targetOriginCountry && cCountry === targetOriginCountry) {
+      score += 50; // Heavy boost for matching origin country
+    } else if (targetOriginCountry === 'IN' && cCountry && cCountry !== 'IN' && cCountry !== 'PK') {
+      score -= 100; // Strong penalty if user is viewing an Indian show and candidate is a random US/CA soap opera
+    }
+
+    if (cLang && targetLanguage && cLang === targetLanguage) {
+      score += 35;
+    }
+
+    // --- PILLAR 2: Network & Production Studio DNA Match ---
+    const cCompanies = (candidate.production_companies || []).map(c => String(c.id || c.name).toLowerCase());
+    const cNetworks = (candidate.networks || []).map(n => String(n.id || n.name).toLowerCase());
+
+    let studioMatch = false;
+    cCompanies.forEach(c => {
+      if (targetCompanies.includes(c)) studioMatch = true;
+    });
+    cNetworks.forEach(n => {
+      if (targetNetworks.includes(n)) studioMatch = true;
+    });
+
+    if (studioMatch) {
+      score += 60; // Huge boost for same studio/creator (e.g. TVF / Studio Dragon / Marvel)
+    }
+
+    // --- PILLAR 3: Topic Keywords Overlap ---
+    const cKeywords = (candidate.keywords || []).map(k => String(k.name || k.id || k).toLowerCase());
+    let sharedKeywordsCount = 0;
+    cKeywords.forEach(k => {
+      if (targetKeywords.includes(k)) {
+        sharedKeywordsCount += 1;
+        score += 15;
+      }
+    });
+
+    // --- PILLAR 4: Multi-Genre Overlap ---
+    let sharedGenresCount = 0;
+    cGenres.forEach(gId => {
+      if (targetGenres.includes(gId)) {
+        sharedGenresCount += 1;
+        score += 25;
+      }
+    });
+
+    // --- PILLAR 5: Quality, Popularity Floor & Era Recency ---
+    score += voteAvg * 3.5;
+    score += Math.min(25, (candidate.popularity || 0) / 8);
+
+    if (Math.abs(cYear - targetYear) <= 8) {
+      score += 15;
+    }
+
+    if (voteCount < 3 || voteAvg === 0) {
+      score -= 100;
+    }
+
+    scoredCandidates.push({
+      item: candidate,
+      score,
+      sharedGenresCount
     });
   }
 
-  // Mock fallback
-  const mockMatch = MOCK_MOVIES.find(m => String(m.id) === String(movieId)) || MOCK_MOVIES[0];
-  return normalizeMediaItem({
-    ...mockMatch,
-    credits: { cast: MOCK_CAST },
-    similar: { results: MOCK_MOVIES.filter(m => m.id !== mockMatch.id).map(normalizeMediaItem) },
-    'watch/providers': { results: MOCK_WATCH_PROVIDERS },
-    videos: { results: [{ key: 'zSWdZVtXT7E', name: 'Official Trailer', type: 'Trailer', site: 'YouTube' }] }
-  });
+  // Sort descending by 5-Pillar Score
+  scoredCandidates.sort((a, b) => b.score - a.score || (b.item.vote_average || 0) - (a.item.vote_average || 0));
+
+  let finalResults = scoredCandidates.map(sc => sc.item);
+
+  if (finalResults.length < 4) {
+    const mockSupplements = MOCK_MOVIES
+      .filter(m => String(m.id) !== targetIdStr)
+      .map(normalizeMediaItem);
+    finalResults = [...finalResults, ...mockSupplements];
+  }
+
+  return finalResults.slice(0, 10);
 }
 
-export async function getMovieSimilar(movieId) {
-  let data = await fetchTMDB(`/movie/${movieId}/similar`);
-  if (!data) data = await fetchTMDB(`/tv/${movieId}/similar`);
-  if (data && data.results) return data.results.map(normalizeMediaItem);
+export async function getMovieDetails(movieId, type = 'movie') {
+  const isTVHint = type === 'tv';
+  const primaryEndpoint = isTVHint ? `/tv/${movieId}` : `/movie/${movieId}`;
+  const secondaryEndpoint = isTVHint ? `/movie/${movieId}` : `/tv/${movieId}`;
+
+  const [primaryData, secondaryData] = await Promise.all([
+    fetchTMDB(primaryEndpoint, { append_to_response: 'credits,similar,recommendations,keywords,watch/providers,videos' }),
+    fetchTMDB(secondaryEndpoint, { append_to_response: 'credits,similar,recommendations,keywords,watch/providers,videos' })
+  ]);
+
+  let data = primaryData;
+
+  // Resolve ID collisions between vintage movies and modern TV series (or vice versa)
+  if (primaryData && secondaryData) {
+    const primaryYear = parseInt((primaryData.release_date || primaryData.first_air_date || '').slice(0, 4), 10) || 0;
+    const secondaryYear = parseInt((secondaryData.release_date || secondaryData.first_air_date || '').slice(0, 4), 10) || 0;
+
+    // If primary query returned an old vintage movie (< 2005) but secondary is modern (>= 2010), pick the modern item
+    if (primaryYear < 2005 && secondaryYear >= 2010) {
+      data = secondaryData;
+    } else if (isTVHint && secondaryData.name && !primaryData.name) {
+      data = secondaryData;
+    }
+  } else if (!primaryData && secondaryData) {
+    data = secondaryData;
+  }
+
+  if (data) {
+    const detectedType = data.name && !data.title ? 'tv' : (data.title ? 'movie' : type);
+    const normalized = normalizeMediaItem({
+      ...data,
+      media_type: detectedType
+    });
+
+    const smartSimilar = await getSmartRecommendations(movieId, detectedType, data);
+
+    return {
+      ...normalized,
+      similar: { results: smartSimilar }
+    };
+  }
+
+  // Mock fallback (only match exact ID, never default to RRR)
+  const mockMatch = MOCK_MOVIES.find(m => String(m.id) === String(movieId));
+  if (mockMatch) {
+    const normalizedMock = normalizeMediaItem({
+      ...mockMatch,
+      credits: mockMatch.credits || { cast: [] },
+      'watch/providers': { results: MOCK_WATCH_PROVIDERS },
+      videos: { results: [{ key: 'zSWdZVtXT7E', name: 'Official Trailer', type: 'Trailer', site: 'YouTube' }] }
+    });
+
+    const smartMockSimilar = await getSmartRecommendations(movieId, type, mockMatch);
+
+    return {
+      ...normalizedMock,
+      similar: { results: smartMockSimilar }
+    };
+  }
+
+  return null;
+}
+
+export async function getMovieSimilar(movieId, type = 'movie') {
+  const details = await getMovieDetails(movieId, type);
+  if (details && details.similar && details.similar.results) {
+    return details.similar.results;
+  }
   return MOCK_MOVIES.filter(m => String(m.id) !== String(movieId)).map(normalizeMediaItem);
 }
 
