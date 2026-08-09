@@ -18,11 +18,32 @@ export default function Footer() {
         </div>
 
         <p style={{ maxWidth: '620px', lineHeight: '1.6', color: '#9ca3af', fontSize: '0.86rem' }}>
-          MSc. Computer Science Final Semester Project (2019) • Created by <strong>Sugata Mondal</strong>.
+          MSc. Computer Science Final Semester Project (2019) • Created by{' '}
+          <a
+            href="https://github.com/CoderSugata"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              color: '#f5c518',
+              fontWeight: '700',
+              textDecoration: 'none'
+            }}
+          >
+            Sugata Mondal
+          </a>.
         </p>
 
         <div style={{ color: '#6b7280', fontSize: '0.78rem', marginTop: '0.2rem' }}>
-          © 2026 Sugata Mondal. All rights reserved.
+          © 2026{' '}
+          <a
+            href="https://github.com/CoderSugata"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: '#9ca3af', textDecoration: 'none' }}
+          >
+            Sugata Mondal
+          </a>
+          . All rights reserved.
         </div>
       </div>
     </footer>
