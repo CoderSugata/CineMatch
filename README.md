@@ -20,7 +20,7 @@
 </p>
 
 <p align="center">
-  <a href="https://cinematch-7d1t.onrender.com/" target="_blank"><img src="https://img.shields.io/badge/Live_Demo-Render-46E399?style=for-the-badge&logo=render" alt="Live Demo" /></a>
+  <a href="https://cinemaatch.vercel.app/" target="_blank"><img src="https://img.shields.io/badge/Live_Demo-Vercel-black?style=for-the-badge&logo=vercel" alt="Live Demo" /></a>
 </p>
 
 ---
@@ -101,7 +101,14 @@ The project addresses the common challenge of *"movie fatigue"* by helping cinep
 
 ## 🌐 Deployment
 
-### Option 1: Render (Web Service)
+### Option 1: Vercel (Recommended)
+1. Push your repository to **GitHub**.
+2. Go to [Vercel](https://vercel.com/) (sign in free with GitHub).
+3. Click **Add New Project** and import your `CineMatch` repository.
+4. Under **Environment Variables**, add `TMDB_API_KEY`.
+5. Click **Deploy**.
+
+### Option 2: Render (Web Service)
 1. Push your repository to **GitHub**.
 2. Go to [Render](https://render.com/) and click **New +** -> **Web Service**.
 3. Connect your **GitHub** repository.
@@ -112,13 +119,6 @@ The project addresses the common challenge of *"movie fatigue"* by helping cinep
 5. Under **Environment Variables**, add:
    - `TMDB_API_KEY` = `your_tmdb_api_key_here`
 6. Click **Create Web Service**. Render will build and host your site!
-
-### Option 2: Vercel
-1. Push your repository to **GitHub**.
-2. Go to [Vercel](https://vercel.com/) (sign in free with GitHub).
-3. Click **Add New Project** and import your `CineMatch` repository.
-4. Under **Environment Variables**, add `TMDB_API_KEY`.
-5. Click **Deploy**.
 
 ---
 
